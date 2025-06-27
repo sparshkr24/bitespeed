@@ -13,3 +13,33 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
+
+model Contact {
+  id              Int       @id @default(autoincrement())
+  phoneNumber     String?   @db.VarChar(20)
+  email           String?   @db.VarChar(255)
+  linkedId        Int?
+  linkPrecedence  LinkPrecedence
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  deletedAt       DateTime?
+
+  // Self-referential relationship for linking contacts
+  linkedContact   Contact?  @relation("ContactLink", fields: [linkedId], references: [id])
+  linkedContacts  Contact[] @relation("ContactLink")
+
+  // Indexes for performance
+  @@index([email])
+  @@index([phoneNumber])
+  @@index([linkedId])
+  @@index([linkPrecedence])
+  @@index([createdAt])
+  
+  // Constraints
+  @@map("contacts")
+}
+
+enum LinkPrecedence {
+  primary
+  secondary
+}
