@@ -40,12 +40,8 @@ npm run dev
 
 ### Production
 ```bash
+npm run build
 npm start
-```
-
-### Testing
-```bash
-npm test
 ```
 
 ## API Endpoints
@@ -77,21 +73,17 @@ CREATE TABLE Contact (
 
 ```
 src/
-├── server.js          # Main server file
-├── config/            # Configuration files
-├── controllers/       # Route controllers
-├── services/          # Business logic
-├── models/            # Database models
-├── routes/            # API routes
-└── utils/             # Utility functions
+├── app.ts                      # Main server file
+├── config/                     # Configuration files
+├── modules/                    # Route controllers
+   ├── contact/                 # Project modules (for now only contact is present)
+      ├── contactRoutes/        # Routes within specific module
+      ├── contactControllers/   # Module controllers
+      ├── contactServices/      # Business logic
+      ├── contactRepositories/  # Database operations
+├── routes/                     # API routes
+└── utils/                      # Utility functions
 ```
-
-## Contributing
-
-1. Follow the commit structure provided
-2. Write clean, readable code
-3. Add proper error handling
-4. Include relevant tests
 
 ## License
 
