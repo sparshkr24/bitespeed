@@ -1,4 +1,4 @@
-// contactService.ts
+import { Contact, LinkPrecedence } from '@prisma/client';
 import * as contactRepository from './contactRepository.js';
 
 interface ContactResponse {
@@ -32,7 +32,7 @@ export const identifyContact = async (
         email,
         phoneNumber,
         linkedId: primaryContact.id,
-        linkPrecedence: 'secondary',
+        linkPrecedence: LinkPrecedence.secondary,
       });
     }
 
@@ -51,7 +51,7 @@ const createNewPrimaryContact = async (
     email,
     phoneNumber,
     linkedId: null,
-    linkPrecedence: 'primary',
+    linkPrecedence: LinkPrecedence.primary,
   });
 
   return {
@@ -65,12 +65,12 @@ const createNewPrimaryContact = async (
 };
 
 const analyzePrimaryContact = async (
-  matchingContacts: any[],
+  matchingContacts: Contact[],
   email?: string,
   phoneNumber?: string
-): Promise<{ primaryContact: any; needsNewSecondary: boolean }> => {
-  const primaryContacts = matchingContacts.filter(c => c.linkPrecedence === 'primary');
-  const secondaryContacts = matchingContacts.filter(c => c.linkPrecedence === 'secondary');
+): Promise<{ primaryContact: Contact; needsNewSecondary: boolean }> => {
+  const primaryContacts = matchingContacts.filter(c => c.linkPrecedence === LinkPrecedence.primary);
+  const secondaryContacts = matchingContacts.filter(c => c.linkPrecedence === LinkPrecedence.secondary);
 
   const primaryIds = new Set<number>();
   primaryContacts.forEach(c => primaryIds.add(c.id));
@@ -86,7 +86,7 @@ const analyzePrimaryContact = async (
       primaryContacts.find(c => c.id === primaryIdArray[0]) ||
       (await contactRepository
         .getAllLinkedContacts(primaryIdArray[0])
-        .then(contacts => contacts.find(c => c.linkPrecedence === 'primary')));
+        .then(contacts => contacts.find(c => c.linkPrecedence === LinkPrecedence.primary)));
 
     if (!primaryContact) throw new Error('Primary contact not found');
 
@@ -102,7 +102,7 @@ const checkIfNewSecondaryNeeded = async (
   email?: string,
   phoneNumber?: string
 ): Promise<boolean> => {
-  const allLinked: any[] = await contactRepository.getAllLinkedContacts(primaryContactId);
+  const allLinked: Contact[] = await contactRepository.getAllLinkedContacts(primaryContactId);
   return !allLinked.some(c => c.email === email && c.phoneNumber === phoneNumber);
 };
 
@@ -110,11 +110,11 @@ const mergePrimaryContacts = async (
   primaryIds: number[],
   email?: string,
   phoneNumber?: string
-): Promise<{ primaryContact: any; needsNewSecondary: boolean }> => {
-  let oldestPrimary: any | null = null;
+): Promise<{ primaryContact: Contact; needsNewSecondary: boolean }> => {
+  let oldestPrimary: Contact | null = null;
   for (const id of primaryIds) {
     const contacts = await contactRepository.getAllLinkedContacts(id);
-    const primary = contacts.find(c => c.linkPrecedence === 'primary');
+    const primary = contacts.find(c => c.linkPrecedence === LinkPrecedence.primary);
     if (primary && (!oldestPrimary || primary.createdAt < oldestPrimary.createdAt)) {
       oldestPrimary = primary;
     }
@@ -141,8 +141,8 @@ const buildConsolidatedResponse = async (
   primaryContactId: number
 ): Promise<ContactResponse> => {
   const allLinked = await contactRepository.getAllLinkedContacts(primaryContactId);
-  const primary = allLinked.find(c => c.linkPrecedence === 'primary');
-  const secondaries = allLinked.filter(c => c.linkPrecedence === 'secondary');
+  const primary = allLinked.find(c => c.linkPrecedence === LinkPrecedence.primary);
+  const secondaries = allLinked.filter(c => c.linkPrecedence === LinkPrecedence.secondary);
 
   if (!primary) throw new Error('Primary contact not found for response');
 

@@ -1,13 +1,19 @@
-// contactRepository.ts
-import { PrismaClient } from '@prisma/client';
+import { Contact, PrismaClient, LinkPrecedence } from '@prisma/client';
 import { getPrismaClient } from '../../config/db.js';
 
 const prisma: PrismaClient = getPrismaClient();
 
+interface CreateContactData {
+  email?: string;
+  phoneNumber?: string;
+  linkedId?: number | null;
+  linkPrecedence: LinkPrecedence;
+}
+
 export const findMatchingContacts = async (
   email?: string,
   phoneNumber?: string
-): Promise<any[]> => {
+): Promise<Contact[]> => {
   try {
     const whereConditions: { email?: string; phoneNumber?: string }[] = [];
     if (email) whereConditions.push({ email });
@@ -32,7 +38,7 @@ export const findMatchingContacts = async (
 
 export const getAllLinkedContacts = async (
   primaryContactId: number
-): Promise<any[]> => {
+): Promise<Contact[]> => {
   try {
     return await prisma.contact.findMany({
       where: {
@@ -52,16 +58,9 @@ export const getAllLinkedContacts = async (
   }
 };
 
-interface CreateContactData {
-  email?: string;
-  phoneNumber?: string;
-  linkedId?: number | null;
-  linkPrecedence: 'primary' | 'secondary';
-}
-
 export const createContact = async (
   contactData: CreateContactData
-): Promise<any> => {
+): Promise<Contact> => {
   try {
     return await prisma.contact.create({
       data: {
@@ -80,13 +79,13 @@ export const createContact = async (
 export const makeContactSecondary = async (
   contactId: number,
   primaryContactId: number
-): Promise<any> => {
+): Promise<Contact> => {
   try {
     return await prisma.contact.update({
       where: { id: contactId },
       data: {
         linkedId: primaryContactId,
-        linkPrecedence: 'secondary',
+        linkPrecedence: LinkPrecedence.secondary,
         updatedAt: new Date(),
       },
     });
