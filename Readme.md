@@ -10,6 +10,12 @@ A backend service that consolidates customer contact information by linking cont
 - Clean, modular, and scalable code architecture
 - Rate limiting and security middleware
 
+## Tech stack
+- Node.js, express.js (backend hosted on render)
+- Typescript
+- Prisma ORM
+- postgreSQL (hosted on render)
+
 ## Prerequisites
 
 - Node.js (v16 or higher)
