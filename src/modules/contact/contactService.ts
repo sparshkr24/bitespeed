@@ -103,7 +103,15 @@ const checkIfNewSecondaryNeeded = async (
   phoneNumber?: string
 ): Promise<boolean> => {
   const allLinked: Contact[] = await contactRepository.getAllLinkedContacts(primaryContactId);
-  return !allLinked.some(c => c.email === email && c.phoneNumber === phoneNumber);
+  
+  const existingEmails = new Set(allLinked.map(c => c.email).filter(Boolean));
+  const existingPhones = new Set(allLinked.map(c => c.phoneNumber).filter(Boolean));
+  
+  const hasNewEmail = email && !existingEmails.has(email);
+  const hasNewPhone = phoneNumber && !existingPhones.has(phoneNumber);
+  
+  // Only create new contact if there's actually new information
+  return !!(hasNewEmail || hasNewPhone);
 };
 
 const mergePrimaryContacts = async (
@@ -133,7 +141,7 @@ const mergePrimaryContacts = async (
     email,
     phoneNumber
   );
-
+  
   return { primaryContact: oldestPrimary, needsNewSecondary };
 };
 
