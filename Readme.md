@@ -41,13 +41,20 @@ A backend service that consolidates customer contact information by linking cont
 
 ### Development
 ```bash
+npx prisma generate
 npm run dev
 ```
 
 ### Production
 ```bash
+npx prisma generate
 npm run build
 npm start
+```
+
+### To view db ui
+```bash
+npx prisma studio
 ```
 
 ## API Endpoints
